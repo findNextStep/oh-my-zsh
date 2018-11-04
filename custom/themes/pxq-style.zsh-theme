@@ -49,13 +49,16 @@ ZSH_THEME_GIT_PROMPT_UNTRACKED="%{$FG[190]%}✭%{$reset_color%} "
 
 # highlight_bg=$bg[red]
 __start=$'\u2605'
-SEGMENT_SEPARATOR=$'\u2593\u2592\u2591'
-SEGMENT_SEPARATOR_diff=$'\u2591\u2592\u2593'
+# SEGMENT_SEPARATOR=$'\u2593\u2592\u2591'
+# SEGMENT_SEPARATOR_diff=$'\u2591\u2592\u2593'
+
+SEGMENT_SEPARATOR=$'\ue0b0'
+SEGMENT_SEPARATOR_diff=$'\ue0b2'
 # Begin a segment
 # Takes two arguments, background and foreground. Both can be omitted,
 # rendering default background/foreground.
 prompt_segment() {
-  echo -n "%{$fg[$1]%}%{$bg[$2]%}$SEGMENT_SEPARATOR"
+  echo -n "%{$fg[$1]%}%{$bg[$2]%}$SEGMENT_SEPARATOR%{$bg[$2]%}"
 }
 prompt_segment_diff() {
   echo -n "%{$fg[$2]%}%{$bg[$1]%}$SEGMENT_SEPARATOR_diff%{$bg[$2]%}"
@@ -64,7 +67,8 @@ prompt_segment_diff() {
 #记录问题
 #展示当前目录
 doprompt() {
-    print -P ${${$(pwd)}//\//%{$fg[red]%}➤ %{$fg[blue]%}}
+    # print -P ${${$(pwd)}//\//%{$fg[red]%}➤ %{$fg[blue]%}}
+    print -P ${${$(pwd)}//\//%{$fg[white]%}'\ue0b1'%{$fg[white]%}}
 }
 #获取精确到ms的时间
 function __getms {
@@ -131,7 +135,7 @@ function show_power {
 # zstyle ':completion:*:*:kill:*:processes' list-colors '=(#b) #([0-9]#)*=0=01;31'
 
 function print_prompt_head {
-    local left_prompt="$fg_bold[blue]$DALLAS_CURRENT_USER_$DALLAS_CURRENT_MACH_$(prompt_segment_diff default green)%{$fg[red]%}$(doprompt)$(git_prompt_info)  "
+    local left_prompt="$fg_bold[blue]$DALLAS_CURRENT_USER_$DALLAS_CURRENT_MACH_$(prompt_segment black blue)%{$fg[red]%}$(doprompt)$(git_prompt_info)  "
     print -P "$left_prompt"
 }
 autoload -U add-zsh-hook
