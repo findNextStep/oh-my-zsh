@@ -178,4 +178,4 @@ build_prompt_diff(){
 
 PROMPT='%{%f%b%k%}$(build_prompt) > '
 RPROMPT='%{%f%b%k%}$(build_prompt_diff)'
-print -P "$fg_bold[blue][$fg_bold[white]%W $fg_bold[blue]:$fg_bold[white] %t$fg_bold[blue]]"
+print -P "$fg_bold[blue][$fg_bold[green]%W $fg[blue]:$fg_bold[green]%t$fg_bold[blue]]"
