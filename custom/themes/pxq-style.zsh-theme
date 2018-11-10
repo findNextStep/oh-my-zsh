@@ -41,10 +41,10 @@ prompt_segment_diff() {
   local bg fg
   [[ -n $1 ]] && bg="%K{$1}" || bg="%k"
   [[ -n $2 ]] && fg="%F{$2}" || fg="%f"
-  if [[ $CURRENT_BG != 'NONE' && $1 != $CURRENT_BG ]]; then
-    CURRENT_BG="default"
-  fi
-  echo -n "%{%F{$1}%}$SEGMENT_SEPARATOR_DIFF%{$bg$fg%} "
+  # if [[ $CURRENT_BG == 'NONE' ]; then
+    # CURRENT_BG="default"
+  # fi
+  echo -n "%{%K{$CURRENT_BG}%}%{%F{$1}%}$SEGMENT_SEPARATOR_DIFF%{$bg$fg%} "
   CURRENT_BG=$1
   echo -n "%B"
   [[ -n $3 ]] && echo -n $3
@@ -112,8 +112,8 @@ prompt_git() {
     zstyle ':vcs_info:*' enable git
     zstyle ':vcs_info:*' get-revision true
     zstyle ':vcs_info:*' check-for-changes true
-    zstyle ':vcs_info:*' stagedstr '✚'
-    zstyle ':vcs_info:*' unstagedstr '●'
+    zstyle ':vcs_info:*' stagedstr '✚ '
+    zstyle ':vcs_info:*' unstagedstr '● '
     zstyle ':vcs_info:*' formats ' %u%c'
     zstyle ':vcs_info:*' actionformats ' %u%c'
     vcs_info
@@ -141,7 +141,7 @@ prompt_virtualenv() {
 # - are there background jobs?
 prompt_background_jobs() {
   local -a symbols
-  [[ $(jobs -l | wc -l) -gt 0 ]] && symbols+="%{%F{cyan}%}⚙" && prompt_segment black default "$symbols"
+  [[ $(jobs -l | wc -l) -gt 0 ]] && symbols+="%{%F{cyan}%}⚙ $(jobs -l | wc -l)" && prompt_segment_diff white cyan "$symbols"
 }
 
 prompt_last_command_status(){
@@ -180,6 +180,7 @@ build_prompt() {
 
 build_prompt_diff(){
   prompt_bettery
+  prompt_background_jobs
 }
 
 PROMPT='%{%f%b%k%}$(build_prompt) > '
