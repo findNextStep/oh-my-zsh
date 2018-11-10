@@ -23,33 +23,38 @@ esac
 # Takes two arguments, background and foreground. Both can be omitted,
 # rendering default background/foreground.
 prompt_segment() {
+  echo -n "%b"
   local bg fg
   [[ -n $1 ]] && bg="%K{$1}" || bg="%k"
   [[ -n $2 ]] && fg="%F{$2}" || fg="%f"
   if [[ $CURRENT_BG != 'NONE' && $1 != $CURRENT_BG ]]; then
-    echo -n " %{$bg%F{$CURRENT_BG}%}$SEGMENT_SEPARATOR%{$fg%} "
+    echo -n "%{$bg%F{$CURRENT_BG}%}$SEGMENT_SEPARATOR%{$fg%} "
   else
     echo -n "%{$bg%}%{$fg%} "
   fi
   CURRENT_BG=$1
+  echo -n "%B"
   [[ -n $3 ]] && echo -n $3
 }
 prompt_segment_diff() {
+  echo -n "%b"
   local bg fg
   [[ -n $1 ]] && bg="%K{$1}" || bg="%k"
   [[ -n $2 ]] && fg="%F{$2}" || fg="%f"
   if [[ $CURRENT_BG != 'NONE' && $1 != $CURRENT_BG ]]; then
     CURRENT_BG="default"
   fi
-  echo -n " %{%F{$1}%}$SEGMENT_SEPARATOR_DIFF%{$bg$fg%} "
+  echo -n "%{%F{$1}%}$SEGMENT_SEPARATOR_DIFF%{$bg$fg%} "
   CURRENT_BG=$1
+  echo -n "%B"
   [[ -n $3 ]] && echo -n $3
 }
 
 # End the prompt, closing any open segments
 prompt_end() {
+  echo -n "%b"
   if [[ -n $CURRENT_BG ]]; then
-    echo -n " %{%k%F{$CURRENT_BG}%}$SEGMENT_SEPARATOR"
+    echo -n "%{%k%F{$CURRENT_BG}%}$SEGMENT_SEPARATOR"
   else
     echo -n "%{%k%}"
   fi
@@ -161,6 +166,7 @@ prompt_bettery(){
 ## Main prompt
 build_prompt() {
   RETVAL=$?
+  echo -n "%B"
   prompt_virtualenv
   prompt_context
   prompt_dir
