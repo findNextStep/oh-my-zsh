@@ -15,8 +15,10 @@ esac
 
 () {
   local LC_ALL="" LC_CTYPE="zh_CN.UTF-8"
-  SEGMENT_SEPARATOR=$'\ue0b0'
-  SEGMENT_SEPARATOR_DIFF=$'\ue0b2'
+  # SEGMENT_SEPARATOR=$'\ue0b0'
+  # SEGMENT_SEPARATOR_DIFF=$'\ue0b2'
+  SEGMENT_SEPARATOR=$'\ue0b8 '
+  SEGMENT_SEPARATOR_DIFF=$'\ue0be '
 }
 
 # Begin a segment
@@ -28,9 +30,9 @@ prompt_segment() {
   [[ -n $1 ]] && bg="%K{$1}" || bg="%k"
   [[ -n $2 ]] && fg="%F{$2}" || fg="%f"
   if [[ $CURRENT_BG != 'NONE' && $1 != $CURRENT_BG ]]; then
-    echo -n "%{$bg%F{$CURRENT_BG}%}$SEGMENT_SEPARATOR%{$fg%} "
+    echo -n "%{$bg%F{$CURRENT_BG}%}$SEGMENT_SEPARATOR%{$fg%}"
   else
-    echo -n "%{$bg%}%{$fg%} "
+    echo -n "%{$bg%}%{$fg%}"
   fi
   CURRENT_BG=$1
   echo -n "%B"
@@ -44,7 +46,7 @@ prompt_segment_diff() {
   # if [[ $CURRENT_BG == 'NONE' ]; then
     # CURRENT_BG="default"
   # fi
-  echo -n "%{%K{$CURRENT_BG}%}%{%F{$1}%}$SEGMENT_SEPARATOR_DIFF%{$bg$fg%} "
+  echo -n "%{%K{$CURRENT_BG}%}%{%F{$1}%}$SEGMENT_SEPARATOR_DIFF%{$bg$fg%}"
   CURRENT_BG=$1
   echo -n "%B"
   [[ -n $3 ]] && echo -n $3
@@ -124,7 +126,7 @@ prompt_git() {
 # Dir: current working directory
 prompt_dir() {
   prompt_segment blue white
-  echo -n ${${$(pwd)}//\//%{$fg[white]%}"\ue0b1"%{$fg[white]%}}
+  echo -n ${${$(expr substr $(pwd) 2 999999)}//\//%{$fg_bold[black]%}"\ue0b9 "%{$fg_bold[white]%}}
 }
 
 # Virtualenv: current working virtualenv
