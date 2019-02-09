@@ -11,9 +11,7 @@ RPROMPT_PREVIOUS=$RPROMPT
 # Default color settings
 if [ -z "$VIMTO_COLOR_NORMAL_TEXT" ]; then VIMTO_COLOR_NORMAL_TEXT=black; fi
 if [ -z "$VIMTO_COLOR_NORMAL_BACKGROUND" ]; then VIMTO_COLOR_NORMAL_BACKGROUND=white; fi
-export time_zle_vim=0
 function zle-keymap-select zle-line-init {
-	time_zle_vim=$(( time_zle_vim + 1 ))
 	# If it's not tmux then can use normal sequences
 	if [[ -z "${TMUX}" ]]; then
 		local vicmd_seq="\e[2 q"
@@ -43,7 +41,6 @@ function zle-keymap-select zle-line-init {
 			RPROMPT=$'$(prompt_segment_diff red white "REPLAC")$(build_prompt_diff)' ||
 			RPROMPT=$'$(prompt_segment_diff blue white "INSERT")$(build_prompt_diff)'
 	fi
-	RPROMPT=$RPROMPT$time_zle_vim
 	zle reset-prompt
 }
 
