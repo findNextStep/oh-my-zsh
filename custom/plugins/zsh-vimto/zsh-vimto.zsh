@@ -30,17 +30,17 @@ function zle-keymap-select zle-line-init {
 	if [ $KEYMAP = vicmd ]; then
 		echo -ne $vicmd_seq
 		RPROMPT_PREVIOUS=$RPROMPT
-		RPROMPT=$'%K{$VIMTO_COLOR_NORMAL_BACKGROUND} %F{$VIMTO_COLOR_NORMAL_TEXT}NORMAL%f %k'
+		RPROMPT=$'$(prompt_segment_diff white black "NORMAL")$(build_prompt_diff)'
 	# Insert mode
 	else
 		echo -ne $viins_seq
-		RPROMPT=$RPROMPT_PREVIOUS
+		RPROMPT=$'$(prompt_segment_diff blue white "INSERT")$(build_prompt_diff)'
 	fi
 	zle reset-prompt
 }
 
 function accept-line-clear-rprompt {
-    export RPROMPT=$RPROMPT_PREVIOUS
+	export RPROMPT=$'%{%f%b%k%}$(build_prompt_diff)%K{$VIMTO_COLOR_NORMAL_BACKGROUND} %F{$VIMTO_COLOR_NORMAL_TEXT}INSERT%f %k'
     zle reset-prompt
     zle accept-line
 }
@@ -55,7 +55,7 @@ zle -N zle-line-init      # When a new line starts
 
 # Fix backspace not working after returning from cmd mode
 bindkey '^?' backward-delete-char
-bindkey '^h' backward-delete-char 
+bindkey '^h' backward-delete-char
 
 # Re-enable incremental search from emacs mode (it's useful)
 bindkey '^r' history-incremental-search-backward
