@@ -11,8 +11,9 @@ RPROMPT_PREVIOUS=$RPROMPT
 # Default color settings
 if [ -z "$VIMTO_COLOR_NORMAL_TEXT" ]; then VIMTO_COLOR_NORMAL_TEXT=black; fi
 if [ -z "$VIMTO_COLOR_NORMAL_BACKGROUND" ]; then VIMTO_COLOR_NORMAL_BACKGROUND=white; fi
-
+export time_zle_vim=0
 function zle-keymap-select zle-line-init {
+	time_zle_vim=$(( time_zle_vim + 1 ))
 	# If it's not tmux then can use normal sequences
 	if [[ -z "${TMUX}" ]]; then
 		local vicmd_seq="\e[2 q"
@@ -25,22 +26,29 @@ function zle-keymap-select zle-line-init {
 		local vicmd_seq="\ePtmux;\e\e[2 q\e\\"
 		local viins_seq="\ePtmux;\e\e[0 q\e\\"
 	fi
-
+	RPROMPT=$'$(prompt_segment_diff white black $KEYMAP)$(build_prompt_diff)'
 	# Command mode
 	if [ $KEYMAP = vicmd ]; then
-		echo -ne $vicmd_seq
-		RPROMPT_PREVIOUS=$RPROMPT
+		local active=${REGION_ACTIVE:-0}
 		RPROMPT=$'$(prompt_segment_diff white black "NORMAL")$(build_prompt_diff)'
+		if [[ $active = 1 ]]; then
+			RPROMPT=$'$(prompt_segment_diff white black "VISUAL")$(build_prompt_diff)'
+        elif [[ $active = 2 ]]; then
+			RPROMPT=$'$(prompt_segment_diff white black "V-LINE")$(build_prompt_diff)'
+        fi
 	# Insert mode
 	else
-		echo -ne $viins_seq
-		RPROMPT=$'$(prompt_segment_diff blue white "INSERT")$(build_prompt_diff)'
+
+		[[ $ZLE_STATE = *overwrite* ]] &&
+			RPROMPT=$'$(prompt_segment_diff red white "REPLAC")$(build_prompt_diff)' ||
+			RPROMPT=$'$(prompt_segment_diff blue white "INSERT")$(build_prompt_diff)'
 	fi
+	RPROMPT=$RPROMPT$time_zle_vim
 	zle reset-prompt
 }
 
 function accept-line-clear-rprompt {
-	export RPROMPT=$'%{%f%b%k%}$(build_prompt_diff)%K{$VIMTO_COLOR_NORMAL_BACKGROUND} %F{$VIMTO_COLOR_NORMAL_TEXT}INSERT%f %k'
+	export RPROMPT=$'$(prompt_segment_diff blue white "INSERT")$(build_prompt_diff)'
     zle reset-prompt
     zle accept-line
 }
@@ -62,3 +70,11 @@ bindkey '^r' history-incremental-search-backward
 
 # Need to initially clear RPROMPT for it to work on first prompt
 export RPROMPT=$RPROMPT_PREVIOUS
+
+
+vim-mode-line-pre-redraw  () {  zle-keymap-select "line" }
+
+autoload -Uz add-zle-hook-widget
+() {
+    local w; for w in "$@"; do add-zle-hook-widget $w vim-mode-$w; done
+} line-pre-redraw
