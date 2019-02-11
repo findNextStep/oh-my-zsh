@@ -30,9 +30,9 @@ function zle-keymap-select zle-line-init {
 		local active=${REGION_ACTIVE:-0}
 		RPROMPT=$'$(prompt_segment_diff white black "NORMAL"&&build_prompt_diff)'
 		if [[ $active = 1 ]]; then
-			RPROMPT=$'$(prompt_segment_diff white black "VISUAL"&&build_prompt_diff)'
+			RPROMPT=$'$(prompt_segment_diff magenta black "VISUAL"&&build_prompt_diff)'
         elif [[ $active = 2 ]]; then
-			RPROMPT=$'$(prompt_segment_diff white black "V-LINE"&&build_prompt_diff)'
+			RPROMPT=$'$(prompt_segment_diff magenta white "V-LINE"&&build_prompt_diff)'
         fi
 	# Insert mode
 	else
