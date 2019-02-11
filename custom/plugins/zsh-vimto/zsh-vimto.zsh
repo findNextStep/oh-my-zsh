@@ -24,28 +24,28 @@ function zle-keymap-select zle-line-init {
 		local vicmd_seq="\ePtmux;\e\e[2 q\e\\"
 		local viins_seq="\ePtmux;\e\e[0 q\e\\"
 	fi
-	RPROMPT=$'$(prompt_segment_diff white black $KEYMAP)$(build_prompt_diff)'
+	RPROMPT=$'$(prompt_segment_diff white black $KEYMAP&&build_prompt_diff)'
 	# Command mode
 	if [ $KEYMAP = vicmd ]; then
 		local active=${REGION_ACTIVE:-0}
-		RPROMPT=$'$(prompt_segment_diff white black "NORMAL")$(build_prompt_diff)'
+		RPROMPT=$'$(prompt_segment_diff white black "NORMAL"&&build_prompt_diff)'
 		if [[ $active = 1 ]]; then
-			RPROMPT=$'$(prompt_segment_diff white black "VISUAL")$(build_prompt_diff)'
+			RPROMPT=$'$(prompt_segment_diff white black "VISUAL"&&build_prompt_diff)'
         elif [[ $active = 2 ]]; then
-			RPROMPT=$'$(prompt_segment_diff white black "V-LINE")$(build_prompt_diff)'
+			RPROMPT=$'$(prompt_segment_diff white black "V-LINE"&&build_prompt_diff)'
         fi
 	# Insert mode
 	else
 
 		[[ $ZLE_STATE = *overwrite* ]] &&
-			RPROMPT=$'$(prompt_segment_diff red white "REPLAC")$(build_prompt_diff)' ||
-			RPROMPT=$'$(prompt_segment_diff blue white "INSERT")$(build_prompt_diff)'
+			RPROMPT=$'$(prompt_segment_diff red white "REPLAC"&&build_prompt_diff)' ||
+			RPROMPT=$'$(prompt_segment_diff blue white "INSERT"&&build_prompt_diff)'
 	fi
 	zle reset-prompt
 }
 
 function accept-line-clear-rprompt {
-	export RPROMPT=$'$(prompt_segment_diff blue white "INSERT")$(build_prompt_diff)'
+	export RPROMPT=$'$(prompt_segment_diff blue white "INSERT"&&build_prompt_diff)'
     zle reset-prompt
     zle accept-line
 }
