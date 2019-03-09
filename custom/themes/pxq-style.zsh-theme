@@ -15,10 +15,10 @@ esac
 
 () {
   local LC_ALL="" LC_CTYPE="zh_CN.UTF-8"
-  # SEGMENT_SEPARATOR=$'\ue0b0'
-  # SEGMENT_SEPARATOR_DIFF=$'\ue0b2'
-  SEGMENT_SEPARATOR=$'\ue0b8 '
-  SEGMENT_SEPARATOR_DIFF=$'\ue0be '
+  SEGMENT_SEPARATOR=$'\ue0b0'
+  SEGMENT_SEPARATOR_DIFF=$'\ue0b2'
+  # SEGMENT_SEPARATOR=$'\uf0da '
+  # SEGMENT_SEPARATOR_DIFF=$'\ue0be '
 }
 
 # Begin a segment
@@ -30,7 +30,7 @@ prompt_segment() {
   [[ -n $1 ]] && bg="%K{$1}" || bg="%k"
   [[ -n $2 ]] && fg="%F{$2}" || fg="%f"
   if [[ $CURRENT_BG != 'NONE' && $1 != $CURRENT_BG ]]; then
-    echo -n "%{$bg%F{$CURRENT_BG}%}$SEGMENT_SEPARATOR%{$fg%}"
+    echo -n " %{$bg%F{$CURRENT_BG}%}$SEGMENT_SEPARATOR%{$fg%} "
   else
     echo -n "%{$bg%}%{$fg%}"
   fi
@@ -79,54 +79,55 @@ prompt_context() {
 
 # Git: branch/detached head, dirty status
 prompt_git() {
-  (( $+commands[git] )) || return
-  if [[ "$(git config --get oh-my-zsh.hide-status 2>/dev/null)" = 1 ]]; then
-    return
-  fi
-  local PL_BRANCH_CHAR
-  () {
-    local LC_ALL="" LC_CTYPE="en_US.UTF-8"
-    PL_BRANCH_CHAR=$'\ue0a0'         # 
-  }
-  local ref dirty mode repo_path
-
-  if $(git rev-parse --is-inside-work-tree >/dev/null 2>&1); then
-    repo_path=$(git rev-parse --git-dir 2>/dev/null)
-    dirty=$(parse_git_dirty)
-    ref=$(git symbolic-ref HEAD 2> /dev/null) || ref="➦ $(git rev-parse --short HEAD 2> /dev/null)"
-    if [[ -n $dirty ]]; then
-      prompt_segment yellow black
+  precmd_update_git_vars
+  if [ -n "$__CURRENT_GIT_STATUS" ]; then
+    if [ "$GIT_BRANCH" = "master" ];then
+      STATUS="$ZSH_THEME_GIT_PROMPT_PREFIX$ZSH_THEME_GIT_PROMPT_BRANCH%{$fg[red]%}$GIT_BRANCH"
     else
-      prompt_segment green $CURRENT_FG
+      STATUS="$ZSH_THEME_GIT_PROMPT_PREFIX$ZSH_THEME_GIT_PROMPT_BRANCH%{$fg[white]%}$GIT_BRANCH"
     fi
-
-    if [[ -e "${repo_path}/BISECT_LOG" ]]; then
-      mode=" <B>"
-    elif [[ -e "${repo_path}/MERGE_HEAD" ]]; then
-      mode=" >M<"
-    elif [[ -e "${repo_path}/rebase" || -e "${repo_path}/rebase-apply" || -e "${repo_path}/rebase-merge" || -e "${repo_path}/../.dotest" ]]; then
-      mode=" >R>"
+    if [ "$GIT_BEHIND" -ne "0" ]; then
+      STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_BEHIND$GIT_BEHIND"
     fi
-
-    setopt promptsubst
-    autoload -Uz vcs_info
-
-    zstyle ':vcs_info:*' enable git
-    zstyle ':vcs_info:*' get-revision true
-    zstyle ':vcs_info:*' check-for-changes true
-    zstyle ':vcs_info:*' stagedstr '✚ '
-    zstyle ':vcs_info:*' unstagedstr '● '
-    zstyle ':vcs_info:*' formats ' %u%c'
-    zstyle ':vcs_info:*' actionformats ' %u%c'
-    vcs_info
-    echo -n "${ref/refs\/heads\//$PL_BRANCH_CHAR }${vcs_info_msg_0_%% }${mode}"
-  fi
-}
+    if [ "$GIT_AHEAD" -ne "0" ]; then
+      STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_AHEAD$GIT_AHEAD"
+    fi
+    STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_SEPARATOR"
+    local clean="0"
+    if [ "$GIT_STAGED" -ne "0" ]; then
+      clean="1"
+      STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_STAGED$GIT_STAGED"
+    fi
+    if [ "$GIT_CONFLICTS" -ne "0" ]; then
+      clean="1"
+      STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_CONFLICTS$GIT_CONFLICTS"
+    fi
+    if [ "$GIT_CHANGED" -ne "0" ]; then
+      clean="1"
+      STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_CHANGED$GIT_CHANGED"
+    fi
+    if [ "$GIT_UNTRACKED" -ne "0" ]; then
+      clean="1"
+      STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_UNTRACKED"
+    fi
+    if [ "$GIT_CHANGED" -eq "0" ] && [ "$GIT_CONFLICTS" -eq "0" ] && [ "$GIT_STAGED" -eq "0" ] && [ "$GIT_UNTRACKED" -eq "0" ]; then
+      clean="0"
+      STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_CLEAN"
+    fi
+    STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_SUFFIX%{${reset_color}%}"
+    if [ $clean -eq "0" ]; then
+      prompt_segment green white ""
+    else
+      prompt_segment yellow white
+    fi
+    echo -n "$STATUS"
+    fi
+  }
 
 # Dir: current working directory
 prompt_dir() {
   prompt_segment blue white
-  echo -n ${${$(expr substr $(pwd) 2 999999)}//\//%{$fg_bold[black]%}"\ue0b9 "%{$fg_bold[white]%}}
+  echo -n ${${$(expr substr $(pwd) 2 999999)}//\//%{$fg_bold[black]%} "\ue0b1" %{$fg_bold[white]%}}
 }
 
 # Virtualenv: current working virtualenv
