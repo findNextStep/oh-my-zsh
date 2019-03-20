@@ -10,3 +10,6 @@
 [submodule "custom/plugins/zsh-git-prompt"]
 	path = custom/plugins/zsh-git-prompt
 	url = https://github.com/olivierverdier/zsh-git-prompt
+[submodule "custom/plugins/rustup"]
+	path = custom/plugins/rustup
+	url = https://github.com/pkulev/zsh-rustup-completion
