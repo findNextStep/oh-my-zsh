@@ -13,13 +13,13 @@ esac
 
 # Special Powerline characters
 
-() {
-  local LC_ALL="" LC_CTYPE="zh_CN.UTF-8"
+# test () {
+  LC_ALL="" LC_CTYPE="zh_CN.UTF-8"
   SEGMENT_SEPARATOR=$'\ue0b0'
   SEGMENT_SEPARATOR_DIFF=$'\ue0b2'
   # SEGMENT_SEPARATOR=$'\uf0da '
   # SEGMENT_SEPARATOR_DIFF=$'\ue0be '
-}
+# }
 
 # Begin a segment
 # Takes two arguments, background and foreground. Both can be omitted,
@@ -148,7 +148,9 @@ prompt_background_jobs() {
 }
 
 prompt_last_command_status(){
-  if [[ $RETVAL -ne 0 ]] && prompt_segment red white "$RETVAL"
+  if [[ $RETVAL -ne 0 ]] ;then
+    prompt_segment red white "$RETVAL"
+  fi
 }
 prompt_show_now_time(){
   prompt_segment blue white "%t"
@@ -188,4 +190,4 @@ build_prompt_diff(){
 
 PROMPT='%{%f%b%k%}$(build_prompt) > '
 RPROMPT='%{%f%b%k%}$(build_prompt_diff)'
-print -P "$fg_bold[blue][$fg_bold[green]%W $fg[blue]:$fg_bold[green]%t$fg_bold[blue]]"
+echo "$fg_bold[blue][$fg_bold[green]$(date -u +"%F") $fg[blue]:$fg_bold[green]$(date -u +"%T")$fg_bold[blue]]"
