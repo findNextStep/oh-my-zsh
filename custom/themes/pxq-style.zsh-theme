@@ -156,16 +156,26 @@ prompt_show_now_time(){
   prompt_segment blue white "%t"
 }
 prompt_bettery(){
+  if [ -d /sys/class/power_supply/BAT0 ];then
     num="$(cat /sys/class/power_supply/BAT0/capacity)"
+    STATUS=$num
+    if [ $( cat /sys/class/power_supply/AC/online) -eq "1" ];then
+      if [[ $num -ne "100" ]];then
+        STATUS=" $STATUS"
+      fi
+    else
+      STATUS="%{$fg[red]%} %{$fg[white]%}$STATUS"
+    fi
     if [[ $num -lt 10 ]];then
-      prompt_segment_diff red white "$num"
+      prompt_segment_diff red white "$STATUS"
     else
       if [[ $num -gt 90 ]];then
-        prompt_segment_diff green white "$num"
+        prompt_segment_diff green white "$STATUS"
       else
-        prompt_segment_diff yellow white "$num"
+        prompt_segment_diff yellow white "$STATUS"
       fi
     fi
+  fi
 }
 
 ## Main prompt
