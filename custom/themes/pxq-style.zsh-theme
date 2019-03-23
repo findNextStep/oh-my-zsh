@@ -200,4 +200,4 @@ build_prompt_diff(){
 
 PROMPT='%{%f%b%k%}$(build_prompt) > '
 RPROMPT='%{%f%b%k%}$(build_prompt_diff)'
-echo "$fg_bold[blue][$fg_bold[green]$(date -u +"%F") $fg[blue]:$fg_bold[green]$(date -u +"%T")$fg_bold[blue]]"
+echo "$fg_bold[blue][$fg_bold[green]$(date -u +"%F") $fg[blue]: $fg_bold[green]$(date -u +"%T")$fg_bold[blue]]"
