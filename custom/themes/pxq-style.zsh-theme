@@ -25,7 +25,7 @@ esac
 set_terminal_fg(){
   case $1 in
     "reset")
-      echo -n "%{\e[49m%}"
+      echo -n "%{\e[39m%}"
       ;;
     "black")
       set_terminal_fg 0
@@ -77,6 +77,8 @@ set_terminal_fg(){
       ;;
     "")
       ;;
+    "NONE")
+      ;;
     *)
       color="%{\e[38;5;$1m%}"
       echo -n "$color"
@@ -87,7 +89,7 @@ set_terminal_fg(){
 set_terminal_bg(){
   case $1 in
     "reset")
-    echo -n "%{\e[39m%}"
+    echo -n "%{\e[49m%}"
       ;;
     "black")
       set_terminal_bg 0
@@ -139,6 +141,8 @@ set_terminal_bg(){
       ;;
     "")
       ;;
+    "NONE")
+      ;;
     *)
       color=%{"\e[48;5;$1m%}"
       echo -n $color
@@ -168,10 +172,8 @@ prompt_segment_diff() {
   local bg fg
   [[ -n $1 ]] && bg="%K{$1}" || bg="%k"
   [[ -n $2 ]] && fg="%F{$2}" || fg="%f"
-  # if [[ $CURRENT_BG == 'NONE' ]; then
-    # CURRENT_BG="default"
-  # fi
-  echo -n "%{%K{$CURRENT_BG}%}%{%F{$1}%}$SEGMENT_SEPARATOR_DIFF%{$bg$fg%}"
+  echo -n "%{$(set_terminal_bg $CURRENT_BG)%}%{$(set_terminal_fg $1)%}$SEGMENT_SEPARATOR_DIFF"
+  echo -n "%{$(set_terminal_fg $2)%}%{$(set_terminal_bg $1)%}"
   CURRENT_BG=$1
   echo -n "%B"
   [[ -n $3 ]] && echo -n $3
@@ -179,13 +181,12 @@ prompt_segment_diff() {
 
 # End the prompt, closing any open segments
 prompt_end() {
-  echo -n "%b"
   if [[ -n $CURRENT_BG ]]; then
-    echo -n "%{%k%F{$CURRENT_BG}%}$SEGMENT_SEPARATOR"
+    echo -n "%{$(set_terminal_fg $CURRENT_BG)%}%{\e[49m%}$SEGMENT_SEPARATOR"
   else
-    echo -n "%{%k%}"
+    echo -n "%{$(set_terminal_bg reset)%}"
   fi
-  echo -n "%{%f%}"
+  echo -n "%{$(set_terminal_fg reset)%}"
   CURRENT_BG='NONE'
 }
 
@@ -195,11 +196,11 @@ prompt_end() {
 # Context: user@hostname (who am I and where am I)
 prompt_context() {
     if [[ $USER == "root" ]];then
-        prompt_segment red white "%n"
+        prompt_segment red white "$USER"
     else
-        prompt_segment blue white "%n"
+        prompt_segment blue white "$USER"
     fi
-    prompt_segment black white "%m"
+    prompt_segment black white "$HOSTNAME"
 }
 
 # Git: branch/detached head, dirty status
@@ -243,7 +244,7 @@ prompt_git() {
     if [ $clean -eq "0" ]; then
       prompt_segment green white ""
     else
-      prompt_segment yellow white
+      prompt_segment olive white
     fi
     echo -n "$STATUS"
     fi
@@ -289,7 +290,7 @@ prompt_bettery(){
         STATUS=" $STATUS"
       fi
     else
-      STATUS="%{$fg[red]%} %{$fg[white]%}$STATUS"
+      STATUS="%{$(set_terminal_fg red)%} %{$(set_terminal_fg white)%}$STATUS"
     fi
     if [[ $num -lt 10 ]];then
       prompt_segment_diff red white "$STATUS"
@@ -297,7 +298,7 @@ prompt_bettery(){
       if [[ $num -gt 90 ]];then
         prompt_segment_diff green white "$STATUS"
       else
-        prompt_segment_diff yellow white "$STATUS"
+        prompt_segment_diff olive white "$STATUS"
       fi
     fi
   fi
@@ -322,8 +323,13 @@ build_prompt_diff(){
   echo -n "%{\e[0m%}"
   prompt_bettery
   prompt_background_jobs
+  echo -n "%{\e[0m%}"
 }
+if [ $0 = "/bin/zsh" ];then
+  PS1='$(build_prompt | sed 's/%{//g' | sed 's/%}//g') > '
+else
+  PS1='$(build_prompt) > '
+  RPROMPT='$(build_prompt_diff)'
+fi
 
-PROMPT='$(build_prompt) > '
-RPROMPT='$(build_prompt_diff)'
 print -P "\e[0m\e[1m$(set_terminal_fg blue)[$(set_terminal_fg green)$(date -u +"%F") $(set_terminal_fg blue): $(set_terminal_fg green)$(date -u +"%T")$(set_terminal_fg blue)]"
