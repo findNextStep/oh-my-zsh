@@ -21,6 +21,7 @@ esac
   # SEGMENT_SEPARATOR_DIFF=$'\ue0be '
 # }
 
+# 使用%{%}防止终端颜色提示符被记入长度计量中影响补全的位置
 set_terminal_fg(){
   case $1 in
     "reset")
