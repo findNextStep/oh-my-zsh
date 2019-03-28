@@ -79,6 +79,9 @@ set_terminal_fg(){
       ;;
     "NONE")
       ;;
+    "cyan")
+      set_terminal_fg 51
+      ;;
     *)
       color="%{\e[38;5;$1m%}"
       echo -n "$color"
@@ -143,6 +146,9 @@ set_terminal_bg(){
       ;;
     "NONE")
       ;;
+    "cyan")
+      set_terminal_bg 51
+      ;;
     *)
       color=%{"\e[48;5;$1m%}"
       echo -n $color
@@ -170,8 +176,6 @@ prompt_segment() {
 prompt_segment_diff() {
   echo -n "%b"
   local bg fg
-  [[ -n $1 ]] && bg="%K{$1}" || bg="%k"
-  [[ -n $2 ]] && fg="%F{$2}" || fg="%f"
   echo -n "%{$(set_terminal_bg $CURRENT_BG)%}%{$(set_terminal_fg $1)%}$SEGMENT_SEPARATOR_DIFF"
   echo -n "%{$(set_terminal_fg $2)%}%{$(set_terminal_bg $1)%}"
   CURRENT_BG=$1
@@ -270,7 +274,7 @@ prompt_virtualenv() {
 # - are there background jobs?
 prompt_background_jobs() {
   local -a symbols
-  [[ $(jobs -l | wc -l) -gt 0 ]] && symbols+="%{%F{cyan}%}⚙ $(jobs -l | wc -l)" && prompt_segment_diff white cyan "$symbols"
+  [[ $(jobs -l | wc -l) -gt 0 ]] && symbols="%{%F{cyan}%}⚙ $(jobs -l | wc -l)" && prompt_segment_diff white cyan "$symbols"
 }
 
 prompt_last_command_status(){
