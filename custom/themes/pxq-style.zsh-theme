@@ -257,7 +257,10 @@ prompt_git() {
 # Dir: current working directory
 prompt_dir() {
   prompt_segment blue white
-  echo -n ${${$(expr substr $(pwd) 2 999999)}//\//%{$(set_terminal_fg black)%} "\ue0b1" %{$(set_terminal_fg white)%}}
+  now_path=$(pwd)
+  now_path=${now_path##/}
+  echo -n $now_path | sed "s/\\//$(set_terminal_fg black)  $(set_terminal_fg white)/g"
+  # echo -n ${${}//\//%{$(set_terminal_fg black)%} "\ue0b1" %{$(set_terminal_fg white)%}}
 }
 
 # Virtualenv: current working virtualenv
@@ -315,7 +318,9 @@ build_prompt() {
   prompt_virtualenv
   prompt_context
   prompt_dir
-  prompt_git
+  if [ $MY_SHELL = "zsh" ];then
+    prompt_git
+  fi
   prompt_end
   echo -n "\n"
   prompt_show_now_time
@@ -329,11 +334,11 @@ build_prompt_diff(){
   prompt_background_jobs
   echo -n "%{\e[0m%}"
 }
-if [ $0 = "/bin/zsh" ];then
-  PS1='$(build_prompt | sed 's/%{//g' | sed 's/%}//g') > '
-else
+if [ $MY_SHELL = "zsh" ];then
   PS1='$(build_prompt) > '
   RPROMPT='$(build_prompt_diff)'
+else
+  PS1='$(echo -ne "$(echo -n $(build_prompt) | sed 's/%{//g' | sed 's/%}//g' )")'
 fi
 
-print -P "\e[0m\e[1m$(set_terminal_fg blue)[$(set_terminal_fg green)$(date -u +"%F") $(set_terminal_fg blue): $(set_terminal_fg green)$(date -u +"%T")$(set_terminal_fg blue)]"
+echo -e "\e[0m\e[1m$(set_terminal_fg blue)[$(set_terminal_fg green)$(date -u +"%F") $(set_terminal_fg blue): $(set_terminal_fg green)$(date -u +"%T")$(set_terminal_fg blue)]\e[0m" | sed 's/%{//g' | sed 's/%}//g'
