@@ -174,12 +174,12 @@ prompt_segment() {
   [[ -n $3 ]] && echo -n $3
 }
 prompt_segment_diff() {
-  echo -n "%b"
+  echo -n "%{\e[0m%}"
   local bg fg
   echo -n "%{$(set_terminal_bg $CURRENT_BG)%}%{$(set_terminal_fg $1)%}$SEGMENT_SEPARATOR_DIFF"
   echo -n "%{$(set_terminal_fg $2)%}%{$(set_terminal_bg $1)%}"
   CURRENT_BG=$1
-  echo -n "%B"
+  echo -n "%{\e[1m%}"
   [[ -n $3 ]] && echo -n $3
 }
 
@@ -212,9 +212,9 @@ prompt_git() {
   precmd_update_git_vars
   if [ -n "$__CURRENT_GIT_STATUS" ]; then
     if [ "$GIT_BRANCH" = "master" ];then
-      STATUS="$ZSH_THEME_GIT_PROMPT_PREFIX$ZSH_THEME_GIT_PROMPT_BRANCH%{$fg[red]%}$GIT_BRANCH"
+      STATUS="$ZSH_THEME_GIT_PROMPT_PREFIX$ZSH_THEME_GIT_PROMPT_BRANCH%{$(set_terminal_fg red)%}$GIT_BRANCH"
     else
-      STATUS="$ZSH_THEME_GIT_PROMPT_PREFIX$ZSH_THEME_GIT_PROMPT_BRANCH%{$fg[white]%}$GIT_BRANCH"
+      STATUS="$ZSH_THEME_GIT_PROMPT_PREFIX$ZSH_THEME_GIT_PROMPT_BRANCH%{$(set_terminal_fg white)%}$GIT_BRANCH"
     fi
     if [ "$GIT_BEHIND" -ne "0" ]; then
       STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_BEHIND$GIT_BEHIND"
@@ -244,7 +244,7 @@ prompt_git() {
       clean="0"
       STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_CLEAN"
     fi
-    STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_SUFFIX%{${reset_color}%}"
+    STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_SUFFIX"
     if [ $clean -eq "0" ]; then
       prompt_segment green white ""
     else
@@ -257,7 +257,7 @@ prompt_git() {
 # Dir: current working directory
 prompt_dir() {
   prompt_segment blue white
-  echo -n ${${$(expr substr $(pwd) 2 999999)}//\//%{$fg_bold[black]%} "\ue0b1" %{$fg_bold[white]%}}
+  echo -n ${${$(expr substr $(pwd) 2 999999)}//\//%{$(set_terminal_fg black)%} "\ue0b1" %{$(set_terminal_fg white)%}}
 }
 
 # Virtualenv: current working virtualenv
@@ -283,7 +283,7 @@ prompt_last_command_status(){
   fi
 }
 prompt_show_now_time(){
-  prompt_segment blue white "%t"
+  prompt_segment blue white "$(date -u +"%T")"
 }
 prompt_bettery(){
   if [ -d /sys/class/power_supply/BAT0 ];then
