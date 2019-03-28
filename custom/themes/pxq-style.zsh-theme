@@ -306,6 +306,7 @@ prompt_bettery(){
 ## Main prompt
 build_prompt() {
   RETVAL=$?
+  echo -n "%{\e[0m%}"
   prompt_virtualenv
   prompt_context
   prompt_dir
@@ -318,10 +319,11 @@ build_prompt() {
 }
 
 build_prompt_diff(){
+  echo -n "%{\e[0m%}"
   prompt_bettery
   prompt_background_jobs
 }
 
-PROMPT='%{%f%b%k%}$(build_prompt) > '
-RPROMPT='%{%f%b%k%}$(build_prompt_diff)'
-echo "$fg_bold[blue][$fg_bold[green]$(date -u +"%F") $fg[blue]: $fg_bold[green]$(date -u +"%T")$fg_bold[blue]]"
+PROMPT='$(build_prompt) > '
+RPROMPT='$(build_prompt_diff)'
+print -P "\e[0m\e[1m$(set_terminal_fg blue)[$(set_terminal_fg green)$(date -u +"%F") $(set_terminal_fg blue): $(set_terminal_fg green)$(date -u +"%T")$(set_terminal_fg blue)]"
