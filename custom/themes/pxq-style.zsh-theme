@@ -21,21 +21,145 @@ esac
   # SEGMENT_SEPARATOR_DIFF=$'\ue0be '
 # }
 
+set_terminal_fg(){
+  case $1 in
+    "reset")
+      echo -n "%{\e[49m%}"
+      ;;
+    "black")
+      set_terminal_fg 0
+      ;;
+    "maroon")
+      set_terminal_fg 1
+      ;;
+    "green")
+      set_terminal_fg 2
+      ;;
+    "olive")
+      set_terminal_fg 3
+      ;;
+    "navy")
+      set_terminal_fg 4
+      ;;
+    "purple")
+      set_terminal_fg 5
+      ;;
+    "teal")
+      set_terminal_fg 6
+      ;;
+    "silver")
+      set_terminal_fg 7
+      ;;
+    "grey")
+      set_terminal_fg 8
+      ;;
+    "red")
+      set_terminal_fg 9
+      ;;
+    "lime")
+      set_terminal_fg 10
+      ;;
+    "yellow")
+      set_terminal_fg 11
+      ;;
+    "blue")
+      set_terminal_fg 12
+      ;;
+    "fuchisa")
+      set_terminal_fg 13
+      ;;
+    "aqua")
+      set_terminal_fg 14
+      ;;
+    "white")
+      set_terminal_fg 15
+      ;;
+    "")
+      ;;
+    *)
+      color="%{\e[38;5;$1m%}"
+      echo -n "$color"
+      ;;
+  esac
+
+}
+set_terminal_bg(){
+  case $1 in
+    "reset")
+    echo -n "%{\e[39m%}"
+      ;;
+    "black")
+      set_terminal_bg 0
+      ;;
+    "maroon")
+      set_terminal_bg 1
+      ;;
+    "green")
+      set_terminal_bg 2
+      ;;
+    "olive")
+      set_terminal_bg 3
+      ;;
+    "navy")
+      set_terminal_bg 4
+      ;;
+    "purple")
+      set_terminal_bg 5
+      ;;
+    "teal")
+      set_terminal_bg 6
+      ;;
+    "silver")
+      set_terminal_bg 7
+      ;;
+    "grey")
+      set_terminal_bg 8
+      ;;
+    "red")
+      set_terminal_bg 9
+      ;;
+    "lime")
+      set_terminal_bg 10
+      ;;
+    "yellow")
+      set_terminal_bg 11
+      ;;
+    "blue")
+      set_terminal_bg 12
+      ;;
+    "fuchisa")
+      set_terminal_bg 13
+      ;;
+    "aqua")
+      set_terminal_bg 14
+      ;;
+    "white")
+      set_terminal_bg 15
+      ;;
+    "")
+      ;;
+    *)
+      color=%{"\e[48;5;$1m%}"
+      echo -n $color
+      ;;
+  esac
+}
+
 # Begin a segment
 # Takes two arguments, background and foreground. Both can be omitted,
 # rendering default background/foreground.
 prompt_segment() {
-  echo -n "%b"
+  echo -n "%{\e[0m%}"
   local bg fg
-  [[ -n $1 ]] && bg="%K{$1}" || bg="%k"
-  [[ -n $2 ]] && fg="%F{$2}" || fg="%f"
+  [[ -n $1 ]] && bg="$1" || bg=""
+  [[ -n $2 ]] && fg="$2" || fg=""
   if [[ $CURRENT_BG != 'NONE' && $1 != $CURRENT_BG ]]; then
-    echo -n " %{$bg%F{$CURRENT_BG}%}$SEGMENT_SEPARATOR%{$fg%} "
+    echo -n "$(set_terminal_bg $bg)$(set_terminal_fg $CURRENT_BG)$SEGMENT_SEPARATOR$(set_terminal_fg $fg)"
   else
-    echo -n "%{$bg%}%{$fg%}"
+    echo -n "$(set_terminal_fg $fg)$(set_terminal_bg $bg)"
   fi
   CURRENT_BG=$1
-  echo -n "%B"
+  echo -n "%{\e[1m%}"
   [[ -n $3 ]] && echo -n $3
 }
 prompt_segment_diff() {
@@ -181,7 +305,6 @@ prompt_bettery(){
 ## Main prompt
 build_prompt() {
   RETVAL=$?
-  echo -n "%B"
   prompt_virtualenv
   prompt_context
   prompt_dir
