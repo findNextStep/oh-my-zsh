@@ -274,7 +274,7 @@ prompt_virtualenv() {
 # - are there background jobs?
 prompt_background_jobs() {
   local -a symbols
-  [[ $(jobs -l | wc -l) -gt 0 ]] && symbols="%{%F{cyan}%}⚙ $(jobs -l | wc -l)" && prompt_segment_diff white cyan "$symbols"
+  [[ $(jobs -l | wc -l) -gt 0 ]] && symbols="⚙ $(jobs -l | wc -l)" && prompt_segment_diff maroon cyan "$symbols"
 }
 
 prompt_last_command_status(){
