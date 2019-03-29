@@ -259,8 +259,11 @@ prompt_dir() {
   prompt_segment blue white
   now_path=$(pwd)
   now_path=${now_path##/}
-  echo -n $now_path | sed "s/\\//$(set_terminal_fg black)  $(set_terminal_fg white)/g"
-  # echo -n ${${}//\//%{$(set_terminal_fg black)%} "\ue0b1" %{$(set_terminal_fg white)%}}
+  if [ $MY_SHELL = "zsh" ];then
+    echo -n $(echo -n $now_path | sed "s/\\//$(set_terminal_fg black)  $(set_terminal_fg white)/g")
+  else
+    echo -n $(echo -n $now_path | sed "s/\\//  /g")
+  fi
 }
 
 # Virtualenv: current working virtualenv
@@ -338,7 +341,7 @@ if [ $MY_SHELL = "zsh" ];then
   PS1='$(build_prompt) > '
   RPROMPT='$(build_prompt_diff)'
 else
-  PS1='$(echo -ne "$(echo -n $(build_prompt) | sed 's/%{//g' | sed 's/%}//g' )")'
+  PS1='$(echo -ne "$(echo -n $(build_prompt) | sed 's/%{//g' | sed 's/%}//g' )") > '
 fi
 
 echo -e "\e[0m\e[1m$(set_terminal_fg blue)[$(set_terminal_fg green)$(date -u +"%F") $(set_terminal_fg blue): $(set_terminal_fg green)$(date -u +"%T")$(set_terminal_fg blue)]\e[0m" | sed 's/%{//g' | sed 's/%}//g'
