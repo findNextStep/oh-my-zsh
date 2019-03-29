@@ -165,9 +165,14 @@ prompt_segment() {
   [[ -n $1 ]] && bg="$1" || bg=""
   [[ -n $2 ]] && fg="$2" || fg=""
   if [[ $CURRENT_BG != 'NONE' && $1 != $CURRENT_BG ]]; then
-    echo -n "$(set_terminal_bg $bg)$(set_terminal_fg $CURRENT_BG)$SEGMENT_SEPARATOR$(set_terminal_fg $fg)"
+    echo -n "$(set_terminal_bg $CURRENT_BG) $(set_terminal_bg $bg)$(set_terminal_fg $CURRENT_BG)$SEGMENT_SEPARATOR"
+  elif [[ $CURRENT_BG != 'NONE' ]];then
+    echo -n "$(set_terminal_bg $CURRENT_BG) $(set_terminal_fg 0)"
+  fi
+  if [[ $CURRENT_BG != 'NONE' ]];then
+    echo -n "$(set_terminal_fg $2)$(set_terminal_bg $1) "
   else
-    echo -n "$(set_terminal_fg $fg)$(set_terminal_bg $bg)"
+    echo -n "$(set_terminal_fg $2)$(set_terminal_bg $1)"
   fi
   CURRENT_BG=$1
   echo -n "%{\e[1m%}"
@@ -260,12 +265,17 @@ prompt_dir() {
   now_path=$(pwd)
   now_path=${now_path##/}
   if [ $MY_SHELL = "zsh" ];then
-    echo -n $(echo -n $now_path | sed "s/\\//$(set_terminal_fg black)  $(set_terminal_fg white)/g")
+    echo -n $(echo -n $now_path | sed "s/\\//$(set_terminal_fg 0)  $(set_terminal_fg white)/g")
   else
     echo -n $(echo -n $now_path | sed "s/\\//  /g")
   fi
 }
 
+prompt_shell(){
+  if [ -n $MY_SHELL ];then
+    prompt_segment cyan 0 "$MY_SHELL"
+  fi
+}
 # Virtualenv: current working virtualenv
 prompt_virtualenv() {
   local virtualenv_path="$VIRTUAL_ENV"
@@ -320,6 +330,7 @@ build_prompt() {
   echo -n "%{\e[0m%}"
   prompt_virtualenv
   prompt_context
+  prompt_shell
   prompt_dir
   if [ $MY_SHELL = "zsh" ];then
     prompt_git
@@ -329,6 +340,7 @@ build_prompt() {
   prompt_show_now_time
   prompt_last_command_status
   prompt_end
+  echo -n "%{\e[0m%}"
 }
 
 build_prompt_diff(){
