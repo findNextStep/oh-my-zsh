@@ -261,14 +261,9 @@ prompt_git() {
 
 # Dir: current working directory
 prompt_dir() {
-  prompt_segment blue white
-  now_path=$(pwd)
-  now_path=${now_path##/}
-  if [ $MY_SHELL = "zsh" ];then
-    echo -n $(echo -n $now_path | sed "s/\\//$(set_terminal_fg 0)  $(set_terminal_fg white)/g")
-  else
-    echo -n $(echo -n $now_path | sed "s/\\//  /g")
-  fi
+  for dir in $(pwd|sed "s/\\//\n/g");do
+    prompt_segment blue white $dir
+  done
 }
 
 prompt_shell(){
