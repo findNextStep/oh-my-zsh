@@ -290,7 +290,8 @@ prompt_background_jobs() {
 
 prompt_last_command_status(){
   if [[ $RETVAL -ne 0 ]] ;then
-    prompt_segment red white "菜$RETVAL"
+    prompt_segment white red "菜"
+    prompt_segment red white "$RETVAL"
   fi
 }
 prompt_show_now_time(){
