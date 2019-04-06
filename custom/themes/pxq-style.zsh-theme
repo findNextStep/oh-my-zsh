@@ -261,9 +261,16 @@ prompt_git() {
 
 # Dir: current working directory
 prompt_dir() {
-  for dir in $(pwd|sed "s/\\//\n/g");do
-    prompt_segment blue white $dir
-  done
+  local current_path=$(pwd|sed "s/\\//\n/g");
+  if [ ${#current_path} -gt $[$(tput cols)-29] ];then
+    for dir in $(echo $current_path);do
+      prompt_segment blue white ${dir:0:1}
+    done
+  else
+    for dir in $(echo $current_path);do
+      prompt_segment blue white $dir
+    done
+  fi
 }
 
 prompt_shell(){
