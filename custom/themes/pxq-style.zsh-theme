@@ -17,15 +17,23 @@ esac
   LC_ALL="" LC_CTYPE="zh_CN.UTF-8"
   SEGMENT_SEPARATOR=$'\ue0b0'
   SEGMENT_SEPARATOR_DIFF=$'\ue0b2'
+  if [ $MY_SHELL = "zsh" ];then
+    _color_front_set="%{"
+    _color_back_set="%}"
+  else
+    _color_front_set=''
+    _color_back_set=''
+  fi
   # SEGMENT_SEPARATOR=$'\uf0da '
   # SEGMENT_SEPARATOR_DIFF=$'\ue0be '
 # }
 
+_color_reset="$_color_front_set\e[0m$_color_back_set"
 # 使用%{%}防止终端颜色提示符被记入长度计量中影响补全的位置
 set_terminal_fg(){
   case $1 in
     "reset")
-      echo -n "%{\e[39m%}"
+      echo -ne "$_color_front_set\e[39m$_color_back_set"
       ;;
     "black")
       set_terminal_fg 0
@@ -83,8 +91,8 @@ set_terminal_fg(){
       set_terminal_fg 51
       ;;
     *)
-      color="%{\e[38;5;$1m%}"
-      echo -n "$color"
+      color="$_color_front_set\e[38;5;$1m$_color_back_set"
+      echo -ne "$color"
       ;;
   esac
 
@@ -92,7 +100,7 @@ set_terminal_fg(){
 set_terminal_bg(){
   case $1 in
     "reset")
-    echo -n "%{\e[49m%}"
+    echo -ne "$_color_front_set\e[49m$_color_back_set"
       ;;
     "black")
       set_terminal_bg 0
@@ -150,8 +158,8 @@ set_terminal_bg(){
       set_terminal_bg 51
       ;;
     *)
-      color=%{"\e[48;5;$1m%}"
-      echo -n $color
+      color="$_color_front_set\e[48;5;$1m$_color_back_set"
+      echo -ne $color
       ;;
   esac
 }
@@ -160,7 +168,7 @@ set_terminal_bg(){
 # Takes two arguments, background and foreground. Both can be omitted,
 # rendering default background/foreground.
 prompt_segment() {
-  echo -n "%{\e[0m%}"
+  echo -ne $_color_reset
   local bg fg
   [[ -n $1 ]] && bg="$1" || bg=""
   [[ -n $2 ]] && fg="$2" || fg=""
@@ -175,27 +183,27 @@ prompt_segment() {
     echo -n "$(set_terminal_fg $2)$(set_terminal_bg $1)"
   fi
   CURRENT_BG=$1
-  echo -n "%{\e[1m%}"
+  echo -n "$_color_front_set\e[1m$_color_back_set"
   [[ -n $3 ]] && echo -n $3
 }
 prompt_segment_diff() {
-  echo -n "%{\e[0m%}"
+  echo -ne $_color_reset
   local bg fg
-  echo -n "%{$(set_terminal_bg $CURRENT_BG)%}%{$(set_terminal_fg $1)%}$SEGMENT_SEPARATOR_DIFF"
-  echo -n "%{$(set_terminal_fg $2)%}%{$(set_terminal_bg $1)%}"
+  echo -n "$_color_front_set$(set_terminal_bg $CURRENT_BG)$_color_back_set$_color_front_set$(set_terminal_fg $1)$_color_back_set$SEGMENT_SEPARATOR_DIFF"
+  echo -n "$_color_front_set$(set_terminal_fg $2)$_color_back_set$_color_front_set$(set_terminal_bg $1)$_color_back_set"
   CURRENT_BG=$1
-  echo -n "%{\e[1m%}"
+  echo -n "$_color_front_set\e[1m$_color_back_set"
   [[ -n $3 ]] && echo -n $3
 }
 
 # End the prompt, closing any open segments
 prompt_end() {
   if [[ -n $CURRENT_BG ]]; then
-    echo -n "%{$(set_terminal_fg $CURRENT_BG)%}%{\e[49m%}$SEGMENT_SEPARATOR"
+    echo -n "$_color_front_set$(set_terminal_fg $CURRENT_BG)$_color_back_set$_color_front_set\e[49m$_color_back_set$SEGMENT_SEPARATOR"
   else
-    echo -n "%{$(set_terminal_bg reset)%}"
+    echo -n "$_color_front_set$(set_terminal_bg reset)$_color_back_set"
   fi
-  echo -n "%{$(set_terminal_fg reset)%}"
+  echo -n "$_color_front_set$(set_terminal_fg reset)$_color_back_set"
   CURRENT_BG='NONE'
 }
 
@@ -209,7 +217,11 @@ prompt_context() {
     else
         prompt_segment blue white "$USER"
     fi
-    prompt_segment black white "$HOSTNAME"
+    if [[ -n "$SSH_CLIENT" ]];then
+      prompt_segment yellow red "直$HOSTNAME"
+    else
+      prompt_segment black white "$HOSTNAME"
+    fi
 }
 
 # Git: branch/detached head, dirty status
@@ -217,9 +229,9 @@ prompt_git() {
   precmd_update_git_vars
   if [ -n "$__CURRENT_GIT_STATUS" ]; then
     if [ "$GIT_BRANCH" = "master" ];then
-      STATUS="$ZSH_THEME_GIT_PROMPT_PREFIX$ZSH_THEME_GIT_PROMPT_BRANCH%{$(set_terminal_fg red)%}$GIT_BRANCH"
+      STATUS="$ZSH_THEME_GIT_PROMPT_PREFIX$ZSH_THEME_GIT_PROMPT_BRANCH$_color_front_set$(set_terminal_fg red)$_color_back_set$GIT_BRANCH"
     else
-      STATUS="$ZSH_THEME_GIT_PROMPT_PREFIX$ZSH_THEME_GIT_PROMPT_BRANCH%{$(set_terminal_fg white)%}$GIT_BRANCH"
+      STATUS="$ZSH_THEME_GIT_PROMPT_PREFIX$ZSH_THEME_GIT_PROMPT_BRANCH$_color_front_set$(set_terminal_fg white)$_color_back_set$GIT_BRANCH"
     fi
     if [ "$GIT_BEHIND" -ne "0" ]; then
       STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_BEHIND$GIT_BEHIND"
@@ -261,15 +273,11 @@ prompt_git() {
 
 # Dir: current working directory
 prompt_dir() {
-  local current_path=$(pwd|sed "s/\\//\n/g");
-  if [ ${#current_path} -gt $[$(tput cols)-29] ];then
-    for dir in $(echo $current_path);do
-      prompt_segment blue white ${dir:0:1}
-    done
+  local local_path=${PWD:1}
+  if [ $MY_SHELL = "zsh" ];then
+    prompt_segment blue white ${local_path//'\/'/"$_color_front_set\e[38;5;0m$_color_back_set $_color_front_set\e[38;5;15m$_color_back_set "}
   else
-    for dir in $(echo $current_path);do
-      prompt_segment blue white $dir
-    done
+    prompt_segment blue white "$(echo ${local_path//"/"/" $_color_front_set\e[38;5;0m$_color_back_set$_color_front_set\e[38;5;15m$_color_back_set "})"
   fi
 }
 
@@ -313,7 +321,7 @@ prompt_bettery(){
         STATUS=" $STATUS"
       fi
     else
-      STATUS="%{$(set_terminal_fg red)%} %{$(set_terminal_fg white)%}$STATUS"
+      STATUS="$_color_front_set$(set_terminal_fg red)$_color_back_set $_color_front_set$(set_terminal_fg white)$_color_back_set$STATUS"
     fi
     if [[ $num -lt 10 ]];then
       prompt_segment_diff red white "$STATUS"
@@ -330,7 +338,7 @@ prompt_bettery(){
 ## Main prompt
 build_prompt() {
   RETVAL=$?
-  echo -n "%{\e[0m%}"
+  echo -ne $_color_reset
   prompt_virtualenv
   prompt_context
   prompt_shell
@@ -343,20 +351,20 @@ build_prompt() {
   prompt_show_now_time
   prompt_last_command_status
   prompt_end
-  echo -n "%{\e[0m%}"
+  echo -ne $_color_reset
 }
 
 build_prompt_diff(){
-  echo -n "%{\e[0m%}"
+  echo -ne $_color_reset
   prompt_bettery
   prompt_background_jobs
-  echo -n "%{\e[0m%}"
+  echo -ne $_color_reset
 }
 if [ $MY_SHELL = "zsh" ];then
   PS1='$(build_prompt) > '
   RPROMPT='$(build_prompt_diff)'
 else
-  PS1='$(echo -ne "$(echo -n $(build_prompt) | sed 's/%{//g' | sed 's/%}//g' )") > '
+  PS1='$(echo -ne $(echo -n $(build_prompt))) > '
 fi
 
-echo -e "\e[0m\e[1m$(set_terminal_fg blue)[$(set_terminal_fg green)$(date -u +"%F") $(set_terminal_fg blue): $(set_terminal_fg green)$(date -u +"%T")$(set_terminal_fg blue)]\e[0m" | sed 's/%{//g' | sed 's/%}//g'
+echo -e "$(echo $_color_reset)\e[1m$(set_terminal_fg blue)[$(set_terminal_fg green)$(date -u +"%F") $(set_terminal_fg blue): $(set_terminal_fg green)$(date -u +"%T")$(set_terminal_fg blue)]$_color_reset" | sed 's/%{//g' | sed 's/%}//g'
