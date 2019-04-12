@@ -15,14 +15,14 @@ esac
 
 # test () {
   LC_ALL="" LC_CTYPE="zh_CN.UTF-8"
-  SEGMENT_SEPARATOR=$'\ue0b0'
-  SEGMENT_SEPARATOR_DIFF=$'\ue0b2'
+  readonly SEGMENT_SEPARATOR=$'\ue0b0'
+  readonly SEGMENT_SEPARATOR_DIFF=$'\ue0b2'
   if [ $MY_SHELL = "zsh" ];then
-    _color_front_set="%{"
-    _color_back_set="%}"
+    readonly _color_front_set="%{"
+    readonly _color_back_set="%}"
   else
-    _color_front_set=''
-    _color_back_set=''
+    readonly _color_front_set=''
+    readonly _color_back_set=''
   fi
   # SEGMENT_SEPARATOR=$'\uf0da '
   # SEGMENT_SEPARATOR_DIFF=$'\ue0be '
@@ -33,7 +33,7 @@ _color_reset="$_color_front_set\e[0m$_color_back_set"
 set_terminal_fg(){
   case $1 in
     "reset")
-      echo -ne "$_color_front_set\e[39m$_color_back_set"
+      echo "$_color_front_set\e[39m$_color_back_set"
       ;;
     "black")
       set_terminal_fg 0
@@ -92,7 +92,11 @@ set_terminal_fg(){
       ;;
     *)
       color="$_color_front_set\e[38;5;$1m$_color_back_set"
-      echo -ne "$color"
+      if [ $MY_SHELL = "zsh" ];then
+        print -n $color
+      else
+        echo -ne $color
+      fi
       ;;
   esac
 
@@ -100,7 +104,7 @@ set_terminal_fg(){
 set_terminal_bg(){
   case $1 in
     "reset")
-    echo -ne "$_color_front_set\e[49m$_color_back_set"
+    print -n "$_color_front_set\e[49m$_color_back_set"
       ;;
     "black")
       set_terminal_bg 0
@@ -159,7 +163,11 @@ set_terminal_bg(){
       ;;
     *)
       color="$_color_front_set\e[48;5;$1m$_color_back_set"
-      echo -ne $color
+      if [ $MY_SHELL = "zsh" ];then
+        print -n $color
+      else
+        echo -ne $color
+      fi
       ;;
   esac
 }
@@ -168,23 +176,24 @@ set_terminal_bg(){
 # Takes two arguments, background and foreground. Both can be omitted,
 # rendering default background/foreground.
 prompt_segment() {
-  echo -ne $_color_reset
+  local SHOW=""$_color_reset
   local bg fg
   [[ -n $1 ]] && bg="$1" || bg=""
   [[ -n $2 ]] && fg="$2" || fg=""
   if [[ $CURRENT_BG != 'NONE' && $1 != $CURRENT_BG ]]; then
-    echo -n "$(set_terminal_bg $CURRENT_BG) $(set_terminal_bg $bg)$(set_terminal_fg $CURRENT_BG)$SEGMENT_SEPARATOR"
+    SHOW=$SHOW"$(set_terminal_bg $CURRENT_BG) $(set_terminal_bg $bg)$(set_terminal_fg $CURRENT_BG)$SEGMENT_SEPARATOR"
   elif [[ $CURRENT_BG != 'NONE' ]];then
-    echo -n "$(set_terminal_bg $CURRENT_BG) $(set_terminal_fg 0)"
+    SHOW=$SHOW"$(set_terminal_bg $CURRENT_BG) $(set_terminal_fg 0)"
   fi
   if [[ $CURRENT_BG != 'NONE' ]];then
-    echo -n "$(set_terminal_fg $2)$(set_terminal_bg $1) "
+    SHOW=$SHOW"$(set_terminal_fg $2)$(set_terminal_bg $1) "
   else
-    echo -n "$(set_terminal_fg $2)$(set_terminal_bg $1)"
+    SHOW=$SHOW"$(set_terminal_fg $2)$(set_terminal_bg $1)"
   fi
   CURRENT_BG=$1
-  echo -n "$_color_front_set\e[1m$_color_back_set"
-  [[ -n $3 ]] && echo -n $3
+  SHOW=$SHOW"$_color_front_set\e[1m$_color_back_set"
+  [[ -n $3 ]] &&  SHOW=$SHOW$3
+  print -n $SHOW
 }
 prompt_segment_diff() {
   echo -ne $_color_reset
@@ -199,11 +208,10 @@ prompt_segment_diff() {
 # End the prompt, closing any open segments
 prompt_end() {
   if [[ -n $CURRENT_BG ]]; then
-    echo -n "$_color_front_set$(set_terminal_fg $CURRENT_BG)$_color_back_set$_color_front_set\e[49m$_color_back_set$SEGMENT_SEPARATOR"
+    print -n "$_color_front_set$(set_terminal_fg $CURRENT_BG)\e[49m$_color_back_set$SEGMENT_SEPARATOR$_color_front_set$(set_terminal_fg reset)$_color_back_set"
   else
-    echo -n "$_color_front_set$(set_terminal_bg reset)$_color_back_set"
+    print -n "$_color_front_set$(set_terminal_bg reset)$(set_terminal_fg reset)$_color_back_set"
   fi
-  echo -n "$_color_front_set$(set_terminal_fg reset)$_color_back_set"
   CURRENT_BG='NONE'
 }
 
@@ -267,8 +275,12 @@ prompt_git() {
     else
       prompt_segment olive white
     fi
-    echo -n "$STATUS"
+    if [ $MY_SHELL = "zsh" ];then
+      print -n "$STATUS"
+    else
+      echo -n "$STATUS"
     fi
+  fi
   }
 
 # Dir: current working directory
@@ -277,7 +289,7 @@ prompt_dir() {
   if [ $MY_SHELL = "zsh" ];then
     prompt_segment blue white ${local_path//'\/'/"$_color_front_set\e[38;5;0m$_color_back_set $_color_front_set\e[38;5;15m$_color_back_set "}
   else
-    prompt_segment blue white "$(echo ${local_path//"/"/" $_color_front_set\e[38;5;0m$_color_back_set$_color_front_set\e[38;5;15m$_color_back_set "})"
+    prompt_segment blue white "$(print -n ${local_path//"/"/" $_color_front_set\e[38;5;0m$_color_back_set$_color_front_set\e[38;5;15m$_color_back_set "})"
   fi
 }
 
@@ -347,7 +359,7 @@ build_prompt() {
     prompt_git
   fi
   prompt_end
-  echo -n "\n"
+  echo ""
   prompt_show_now_time
   prompt_last_command_status
   prompt_end
