@@ -322,7 +322,7 @@ prompt_last_command_status(){
   fi
 }
 prompt_show_now_time(){
-  prompt_segment blue white "$(date -u +"%T")"
+  prompt_segment blue white "$(date +"%T")"
 }
 prompt_bettery(){
   if [ -d /sys/class/power_supply/BAT0 ];then
