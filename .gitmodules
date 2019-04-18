@@ -13,3 +13,6 @@
 [submodule "custom/plugins/rustup"]
 	path = custom/plugins/rustup
 	url = https://github.com/pkulev/zsh-rustup-completion
+[submodule "custom/plugins/Snappy"]
+	path = custom/plugins/Snappy
+	url = https://github.com/cperrin88/Snappy_zsh_autocompletion
