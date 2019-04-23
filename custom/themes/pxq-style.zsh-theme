@@ -347,6 +347,22 @@ prompt_bettery(){
   fi
 }
 
+prompt_session_check(){
+  if [ -f .Session.vim ];then
+    prompt_segment green white " "
+  fi
+  if [ -f .vscode/settings.json ];then
+    prompt_segment blue white " "
+  fi
+}
+
+prompt_proxy(){
+  if [ $http_proxy ];then
+    prompt_segment black blue " "
+  fi
+}
+
+
 ## Main prompt
 build_prompt() {
   RETVAL=$?
@@ -358,6 +374,8 @@ build_prompt() {
   if [ $MY_SHELL = "zsh" ];then
     prompt_git
   fi
+  prompt_session_check
+  prompt_proxy
   prompt_end
   echo ""
   prompt_show_now_time
