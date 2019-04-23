@@ -223,11 +223,11 @@ prompt_context() {
     if [[ $USER == "root" ]];then
         prompt_segment red white "$USER"
     else
-        prompt_segment blue white "$USER"
+        prompt_segment 4 white "$USER"
     fi
     if [[ -n "$SSH_CLIENT" ]];then
       prompt_segment yellow red "直$HOSTNAME"
-    else
+    elif [ ${HOSTNAME:0:3} != "pxq" ];then
       prompt_segment black white "$HOSTNAME"
     fi
 }
@@ -352,7 +352,7 @@ prompt_session_check(){
     prompt_segment green white " "
   fi
   if [ -f .vscode/settings.json ];then
-    prompt_segment blue white " "
+    prompt_segment 17 white " "
   fi
 }
 
@@ -369,7 +369,9 @@ build_prompt() {
   echo -ne $_color_reset
   prompt_virtualenv
   prompt_context
-  prompt_shell
+  if [ $MY_SHELL != "zsh" ];then
+    prompt_shell
+  fi
   prompt_dir
   if [ $MY_SHELL = "zsh" ];then
     prompt_git
