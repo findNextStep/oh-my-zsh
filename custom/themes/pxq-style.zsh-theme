@@ -324,11 +324,19 @@ prompt_last_command_status(){
 prompt_show_now_time(){
   prompt_segment blue white "$(date +"%T")"
 }
+
+for f in $(ls /sys/class/power_supply/);do
+  if [ -e /sys/class/power_supply/$f/online ];then
+    ACF="/sys/class/power_supply/$f/online"
+  fi
+done
+
+
 prompt_bettery(){
   if [ -d /sys/class/power_supply/BAT0 ];then
     num="$(cat /sys/class/power_supply/BAT0/capacity)"
     STATUS=$num
-    if [ $( cat /sys/class/power_supply/AC/online) -eq "1" ];then
+    if [ $( cat $ACF) -eq "1" ];then
       if [[ $num -ne "100" ]];then
         STATUS=" $STATUS"
       fi
