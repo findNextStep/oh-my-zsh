@@ -362,6 +362,9 @@ prompt_session_check(){
   if [ -f .vscode/settings.json ];then
     prompt_segment 17 white " "
   fi
+  if [ -f Cargo.toml ];then
+    prompt_segment 3 0 " "
+  fi
 }
 
 prompt_proxy(){
