@@ -325,11 +325,13 @@ prompt_show_now_time(){
   prompt_segment blue white "$(date +"%T")"
 }
 
-for f in $(ls /sys/class/power_supply/);do
-  if [ -e /sys/class/power_supply/$f/online ];then
-    ACF="/sys/class/power_supply/$f/online"
-  fi
-done
+if [ "$(uname -s)" = "Linux" ];then
+  for f in $(ls /sys/class/power_supply/);do
+    if [ -e /sys/class/power_supply/$f/online ];then
+      ACF="/sys/class/power_supply/$f/online"
+    fi
+  done
+fi
 
 
 prompt_bettery(){
