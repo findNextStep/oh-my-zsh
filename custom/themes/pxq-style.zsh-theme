@@ -234,54 +234,43 @@ prompt_context() {
 
 # Git: branch/detached head, dirty status
 prompt_git() {
-  precmd_update_git_vars
-  if [ -n "$__CURRENT_GIT_STATUS" ]; then
-    if [ "$GIT_BRANCH" = "master" ];then
-      STATUS="$ZSH_THEME_GIT_PROMPT_PREFIX$ZSH_THEME_GIT_PROMPT_BRANCH$_color_front_set$(set_terminal_fg red)$_color_back_set$GIT_BRANCH"
-    else
-      STATUS="$ZSH_THEME_GIT_PROMPT_PREFIX$ZSH_THEME_GIT_PROMPT_BRANCH$_color_front_set$(set_terminal_fg white)$_color_back_set$GIT_BRANCH"
-    fi
-    if [ "$GIT_BEHIND" -ne "0" ]; then
-      STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_BEHIND$GIT_BEHIND"
-    fi
-    if [ "$GIT_AHEAD" -ne "0" ]; then
-      STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_AHEAD$GIT_AHEAD"
-    fi
-    STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_SEPARATOR"
-    local clean="0"
-    if [ "$GIT_STAGED" -ne "0" ]; then
-      clean="1"
-      STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_STAGED$GIT_STAGED"
-    fi
-    if [ "$GIT_CONFLICTS" -ne "0" ]; then
-      clean="1"
-      STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_CONFLICTS$GIT_CONFLICTS"
-    fi
-    if [ "$GIT_CHANGED" -ne "0" ]; then
-      clean="1"
-      STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_CHANGED$GIT_CHANGED"
-    fi
-    if [ "$GIT_UNTRACKED" -ne "0" ]; then
-      clean="1"
-      STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_UNTRACKED"
-    fi
-    if [ "$GIT_CHANGED" -eq "0" ] && [ "$GIT_CONFLICTS" -eq "0" ] && [ "$GIT_STAGED" -eq "0" ] && [ "$GIT_UNTRACKED" -eq "0" ]; then
-      clean="0"
-      STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_CLEAN"
-    fi
-    STATUS="$STATUS$ZSH_THEME_GIT_PROMPT_SUFFIX"
-    if [ $clean -eq "0" ]; then
-      prompt_segment green white ""
-    else
-      prompt_segment olive white
-    fi
-    if [ $MY_SHELL = "zsh" ];then
-      print -n "$STATUS"
-    else
-      echo -n "$STATUS"
+  if ( which gitstatus_query > /dev/null );then
+    gitstatus_query next
+    if [ $VCS_STATUS_RESULT = "ok-sync" ];then
+      GIT_PRO=${${VCS_STATUS_LOCAL_BRANCH:-@$(print ${VCS_STATUS_COMMIT} | cut -c 1-8)}//\%/%%}
+      if [ "$VCS_STATUS_LOCAL_BRANCH" = "master" ] ;then
+        GIT_PRO="$(set_terminal_fg red)$VCS_STATUS_LOCAL_BRANCH$(set_terminal_fg white)"
+      fi
+      # with conflicted
+      if (( $VCS_STATUS_NUM_CONFLICTED > 0));then
+        GIT_PRO="$GIT_PRO $(set_terminal_fg red)$VCS_STATUS_NUM_CONFLICTED$(set_terminal_fg white)"
+      fi
+      # has commit
+      if (( $VCS_STATUS_NUM_STAGED > 0));then
+        GIT_PRO="$GIT_PRO +$VCS_STATUS_NUM_STAGED"
+      fi
+      # need commit
+      if (( $VCS_STATUS_NUM_UNSTAGED > 0));then
+        GIT_PRO="$GIT_PRO *$VCS_STATUS_NUM_UNSTAGED"
+      fi
+      # need push
+      if (( $VCS_STATUS_COMMITS_AHEAD > 0));then
+        GIT_PRO="$GIT_PRO ↑$VCS_STATUS_COMMITS_AHEAD"
+      fi
+      # need pull
+      if (( $VCS_STATUS_COMMITS_BEHIND > 0));then
+        GIT_PRO="$GIT_PRO ↓$VCS_STATUS_COMMITS_BEHIND"
+      fi
+      if (( $VCS_STATUS_NUM_CONFLICTED > 0));then
+        prompt_segment purple white  "$GIT_PRO"
+      elif (( $VCS_STATUS_NUM_UNSTAGED > 0 || $VCS_STATUS_NUM_STAGED > 0 ));then
+        prompt_segment 136 white  "$GIT_PRO"
+      else
+        prompt_segment green white  "$GIT_PRO"
+      fi
     fi
   fi
-  }
+}
 
 # Dir: current working directory
 prompt_dir() {
@@ -331,6 +320,7 @@ if [ "$(uname -s)" = "Linux" ];then
       ACF="/sys/class/power_supply/$f/online"
     fi
   done
+elif [ "$(uname -s)" = "Darwin" ];then
 fi
 
 
@@ -354,7 +344,21 @@ prompt_bettery(){
         prompt_segment_diff olive white "$STATUS"
       fi
     fi
+  elif [ "$(uname -s)" = "Darwin" ];then
+    STATUS="$(pmset -g ps|grep -o '[0-9]*%')"
+    num=${STATUS%%%}
+    STATUS="$_color_front_set$(set_terminal_fg red)$_color_back_set $_color_front_set$(set_terminal_fg white)$_color_back_set$STATUS"
+    if [[ $num -lt 10 ]];then
+      prompt_segment_diff red white "$STATUS\n"
+    else
+      if [[ $num -gt 90 ]];then
+        prompt_segment_diff green white "$STATUS\n"
+      else
+        prompt_segment_diff olive white "$STATUS\n"
+      fi
+    fi
   fi
+
 }
 
 prompt_session_check(){
@@ -401,8 +405,8 @@ build_prompt() {
 
 build_prompt_diff(){
   echo -ne $_color_reset
-  prompt_bettery
-  prompt_background_jobs
+  # prompt_bettery
+  # prompt_background_jobs
   echo -ne $_color_reset
 }
 if [ $MY_SHELL = "zsh" ];then

@@ -7,9 +7,6 @@
 [submodule "custom/plugins/fast-syntax-highlighting"]
 	path = custom/plugins/fast-syntax-highlighting
 	url = https://github.com/zdharma/fast-syntax-highlighting
-[submodule "custom/plugins/zsh-git-prompt"]
-	path = custom/plugins/zsh-git-prompt
-	url = https://github.com/olivierverdier/zsh-git-prompt
 [submodule "custom/plugins/rustup"]
 	path = custom/plugins/rustup
 	url = https://github.com/pkulev/zsh-rustup-completion
