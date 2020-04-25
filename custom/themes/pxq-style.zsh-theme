@@ -15,8 +15,8 @@ esac
 
 # test () {
   LC_ALL="" LC_CTYPE="zh_CN.UTF-8"
-  readonly SEGMENT_SEPARATOR=$'\ue0b0'
-  readonly SEGMENT_SEPARATOR_DIFF=$'\ue0b2'
+  readonly SEGMENT_SEPARATOR="\ue0b0"
+  readonly SEGMENT_SEPARATOR_DIFF="\ue0b2"
   if [ $MY_SHELL = "zsh" ];then
     readonly _color_front_set="%{"
     readonly _color_back_set="%}"
@@ -396,7 +396,7 @@ build_prompt() {
   prompt_session_check
   prompt_proxy
   prompt_end
-  echo ""
+  print -n '\n'
   prompt_show_now_time
   prompt_last_command_status
   prompt_end
@@ -405,8 +405,8 @@ build_prompt() {
 
 build_prompt_diff(){
   echo -ne $_color_reset
-  # prompt_bettery
-  # prompt_background_jobs
+  prompt_bettery
+  prompt_background_jobs
   echo -ne $_color_reset
 }
 if [ $MY_SHELL = "zsh" ];then
