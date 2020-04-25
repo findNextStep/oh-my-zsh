@@ -19,3 +19,6 @@
 [submodule "plugins/fzf-tab"]
 	path = plugins/fzf-tab
 	url = https://github.com/Aloxaf/fzf-tab
+[submodule "custom/plugins/gitstatus"]
+	path = custom/plugins/gitstatus
+	url = https://github.com/romkatv/gitstatus
